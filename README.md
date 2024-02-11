@@ -42,3 +42,13 @@ js: yarn build --watch
 css: yarn build:css --watch
 ```
 * Scripts live in /bin folder of the Rails app.
+* In Gemfile `gem "simple_form"`
+```zsh
+bundle install
+bin/rails generate simple_form:install
+```
+
+---
+## Testing
+- Generate system tests with: `bin/rails g system_test quotes`
+- Run with: `bin/rails test:system`
