@@ -29,7 +29,7 @@ Ruby on Rails 7 App to play with Hotwire & Turbo
 [Hotrails](https://www.hotrails.dev/turbo-rails/turbo-rails-tutorial-introduction)
 
 ---
-## Log
+## Rails 7 Notes
 * `rails new turbo-rails-app --css=sass --javascript=esbuild --database=postgresql`
 * To install dependencies and set up db `bin/setup`
 * Run the rails server, and the scripts that precompile the CSS and the JavaScript code with the `bin/dev` command
@@ -52,3 +52,14 @@ bin/rails generate simple_form:install
 ## Testing
 - Generate system tests with: `bin/rails g system_test quotes`
 - Run with: `bin/rails test:system`
+
+---
+## Working with CSS
+Our app/assets/stylesheets/ folder will contain four elements:
+- The application.sass.scss manifest file to import all our styles.
+- A mixins/ folder where we'll add Sass mixins.
+  - Only contains one file `_media.scss` - defining breakpoints of media queries
+- A config/ folder where we'll add our variables and global styles.
+  - Contains the "look and feel" of the app
+- A components/ folder where we'll add our components.
+- A layouts/ folder where we'll add our layouts.
