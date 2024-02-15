@@ -1,7 +1,7 @@
 # config/initializers/simple_form.rb
 
 SimpleForm.setup do |config|
-  # Wrappers configration
+  # Wrappers configuration
   config.wrappers :default, class: "form__group" do |b|
     b.use :html5
     b.use :placeholder
