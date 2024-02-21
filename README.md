@@ -76,6 +76,7 @@ import "@hotwired/turbo-rails"
 import "./controllers"
 ```
 - Turbo Drive speeds up our Ruby on Rails applications by converting all link clicks and form submissions into AJAX requests.
+### Disabling Turbo Drive
 - To disable Turbo Drive on a link or a form, we need to add the `data-turbo="false"` data attribute on it.
 ```html
 <main class="container">
@@ -99,7 +100,7 @@ import { Turbo } from "@hotwired/turbo-rails"
 Turbo.session.drive = false
 ```
 - Turbo Drive compares the DOM elements with data-turbo-track="reload" in the <head> of the current HTML page and the <head> of the response. If there are differences, Turbo Drive will reload the whole page.
-- Styling Turbo Drive progress bar:
+### Styling Turbo Drive progress bar:
 ```scss
 // app/assets/stylesheets/components/_turbo_progress_bar.scss
 
