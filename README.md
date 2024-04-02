@@ -41,6 +41,8 @@ web: bin/rails server -p 3000
 js: yarn build --watch
 css: yarn build:css --watch
 ```
+* To start server `bin/dev`
+
 * Scripts live in /bin folder of the Rails app.
 * In Gemfile `gem "simple_form"`
 ```zsh
@@ -114,3 +116,159 @@ Turbo.session.drive = false
 // All the previous code
 @import "components/turbo_progress_bar";
 ```
+---
+## Turbo Frames & Turbo Stream Templates
+- TLDR: Making all CRUD actions on quotes happen on the index page.
+### Turbo Frames
+- **Turbo Frames** are independent pieces of a web page that can be appended/prepended/replaced or removed without a complete page refresh (and without writing any JS).
+#### Simple turbo frame:
+- The below links to
+```html
+<%# app/views/quotes/index.html.erb %>
+
+<main class="container">
+  <%= turbo_frame_tag "first_turbo_frame" do %>
+    <div class="header">
+      <h1>Quotes</h1>
+      <%= link_to "New quote", new_quote_path, class: "btn btn--primary" %>
+    </div>
+  <% end %>
+
+  <%= render @quotes %>
+</main>
+```
+The new "form" only.
+```html
+<%# app/views/quotes/new.html.erb %>
+
+<main class="container">
+  <%= link_to sanitize("&larr; Back to quotes"), quotes_path %>
+
+  <div class="header">
+    <h1>New quote</h1>
+  </div>
+
+  <%= turbo_frame_tag "first_turbo_frame" do %>
+    <%= render "form", quote: @quote %>
+  <% end %>
+</main>
+```
+
+### Turbo Frames cheat sheet (Rules for Turbo Frames)
+- Rule 1: When clicking a link within a Turbo Frame, Turbo expects the same id on the target page. It replaces the Frame's content on the source page with the Frame's content on the target page.
+- Rule 2: When clicking a link within a Turbo Frame, if there is no Turbo frame with the same id on the target page, the frame disappears and we are served an error (Response has no matching <turbo-frame id="name_of_the_frame"> element is logged in the dev tool console).
+- Rule 3: A link can target another frame other than the one it is directly nested in thanks to the `data-turbo-frame` data attribute.
+- NB: Special frame `_top` represents the whole page.
+
+### Editing quotes with Turbo Frames
+- Use turbo frames to embed edit page in index by passing `quote` variables from _quote.html.erb to edit.
+
+### Turbo Frames and the dom_id helper
+- The `turbo_frame_tag` can be passed a string to be converted to a `dom_id`.
+```ruby
+# If the quote is persisted and its id is 1:
+dom_id(@quote) # => "quote_1"
+
+# If the quote is a new record:
+dom_id(Quote.new) # => "new_quote"
+```
+
+### Showing and deleting quotes
+- Fix show and delete to use `data: { turbo_frame: "_top"}` to fix vanishing pages side effect.
+
+### The Turbo Stream format
+- Forms in Rails 7 are now submitted with the TURBO_STREAM format.
+- To delete using turbo stream:
+```ruby
+# app/controllers/quotes_controller.rb
+
+def destroy
+  @quote.destroy
+
+  respond_to do |format|
+    format.html { redirect_to quotes_path, notice: "Quote was successfully destroyed." }
+    format.turbo_stream
+  end
+end
+```
+
+```erbruby
+<%# app/views/quotes/destroy.turbo_stream.erb %>
+
+<%= turbo_stream.remove "quote_#{@quote.id}" %>
+```
+- Turbo Stream can perform the following actions:
+```ruby
+# Remove a Turbo Frame
+turbo_stream.remove
+
+# Insert a Turbo Frame at the beginning/end of a list
+turbo_stream.append
+turbo_stream.prepend
+
+# Insert a Turbo Frame before/after another Turbo Frame
+turbo_stream.before
+turbo_stream.after
+
+# Replace or update the content of a Turbo Frame
+turbo_stream.update
+turbo_stream.replace
+```
+- The turbo_stream helper expects a partial and locals as arguments to know which HTML it needs to append, prepend, replace from the DOM.
+- Turbo Frames + TURBO_STREAM format allows for performing precise operations on pieces of our web pages without having to write a single line of JavaScript, therefore preserving the state of our web pages.
+
+### Creating a new quote with turbo frames
+For a new record, the following is equivalent:
+```erbruby
+turbo_frame_tag "new_quote"
+turbo_frame_tag Quote.new
+turbo_frame_tag @quote
+```
+- A controller action needs to be made aware that it should support HTML and TURBO_STREAM if you are using both formats.
+```ruby
+respond_to do |format|
+        format.html { redirect_to quotes_path, notice: "Quote was successfully created." }
+        format.turbo_stream
+      end
+```
+- A corresponding turbo_stream view must be created.
+```erbruby
+<%# app/views/quotes/create.turbo_stream.erb %>
+
+<%= turbo_stream.prepend "quotes", partial: "quotes/quote", locals: { quote: @quote } %>
+<%= turbo_stream.update Quote.new, "" %>
+```
+Alternate syntax:
+```erbruby
+<%# app/views/quotes/create.turbo_stream.erb %>
+
+<%= turbo_stream.prepend "quotes" do %>
+  <%= render partial: "quotes/quote", locals: { quote: @quote } %>
+<% end %>
+
+<%= turbo_stream.update Quote.new, "" %>
+```
+In RoR, the following are equivalent:
+```erbruby
+render partial: "quotes/quote", locals: { quote: @quote }
+render @quote
+```
+So the above becomes:
+```erbruby
+<%# app/views/quotes/create.turbo_stream.erb %>
+
+<%= turbo_stream.prepend "quotes" do %>
+  <%= render @quote %>
+<% end %>
+
+<%= turbo_stream.update Quote.new, "" %>
+```
+Anf can be further shortened as (since block syntax is not needed):
+```erbruby
+<%# app/views/quotes/create.turbo_stream.erb %>
+
+<%= turbo_stream.prepend "quotes", @quote %>
+<%= turbo_stream.update Quote.new, "" %>
+```
+### Adding a cancel button
+- 
