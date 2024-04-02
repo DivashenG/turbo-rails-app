@@ -218,3 +218,57 @@ turbo_stream.replace
 - Turbo Frames + TURBO_STREAM format allows for performing precise operations on pieces of our web pages without having to write a single line of JavaScript, therefore preserving the state of our web pages.
 
 ### Creating a new quote with turbo frames
+For a new record, the following is equivalent:
+```erbruby
+turbo_frame_tag "new_quote"
+turbo_frame_tag Quote.new
+turbo_frame_tag @quote
+```
+- A controller action needs to be made aware that it should support HTML and TURBO_STREAM if you are using both formats.
+```ruby
+respond_to do |format|
+        format.html { redirect_to quotes_path, notice: "Quote was successfully created." }
+        format.turbo_stream
+      end
+```
+- A corresponding turbo_stream view must be created.
+```erbruby
+<%# app/views/quotes/create.turbo_stream.erb %>
+
+<%= turbo_stream.prepend "quotes", partial: "quotes/quote", locals: { quote: @quote } %>
+<%= turbo_stream.update Quote.new, "" %>
+```
+Alternate syntax:
+```erbruby
+<%# app/views/quotes/create.turbo_stream.erb %>
+
+<%= turbo_stream.prepend "quotes" do %>
+  <%= render partial: "quotes/quote", locals: { quote: @quote } %>
+<% end %>
+
+<%= turbo_stream.update Quote.new, "" %>
+```
+In RoR, the following are equivalent:
+```erbruby
+render partial: "quotes/quote", locals: { quote: @quote }
+render @quote
+```
+So the above becomes:
+```erbruby
+<%# app/views/quotes/create.turbo_stream.erb %>
+
+<%= turbo_stream.prepend "quotes" do %>
+  <%= render @quote %>
+<% end %>
+
+<%= turbo_stream.update Quote.new, "" %>
+```
+Anf can be further shortened as (since block syntax is not needed):
+```erbruby
+<%# app/views/quotes/create.turbo_stream.erb %>
+
+<%= turbo_stream.prepend "quotes", @quote %>
+<%= turbo_stream.update Quote.new, "" %>
+```
+### Adding a cancel button
+- 

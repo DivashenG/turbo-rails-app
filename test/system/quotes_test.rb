@@ -4,7 +4,8 @@ require "application_system_test_case"
 
 class QuotesTest < ApplicationSystemTestCase
   setup do
-    @quote = quotes(:first) # Reference to the first fixture quote
+    # We need to order quote as well in the system tests
+    @quote = Quote.ordered.first
   end
 
   test "Showing a quote" do
@@ -20,9 +21,22 @@ class QuotesTest < ApplicationSystemTestCase
     visit quotes_path
     assert_selector "h1", text: "Quotes"
 
+    # When we click on the link with the text "New quote"
+    # we expect to land on a page with the title "New quote"
     click_on "New quote"
-    assert_selector "h1", text: "Capybara quote"
+    #assert_selector "h1", text: "New quote"
+    #getting rid of it, since we will use same page rendering
 
+    # When we fill in the name input with "Capybara quote"
+    # and we click on "Create Quote"
+    # Then, we expect to be back on the page with the title "Quotes"
+    # and to see our "Capybara quote" added to the list
+    # --
+    # This changes on the chapter about Turbo frames
+    # where all is rendered in the same page
+
+    fill_in "Name", with: "Capybara quote"
+    # Added once we use same page rendering
     assert_selector "h1", text: "Quotes"
     click_on "Create quote"
 
